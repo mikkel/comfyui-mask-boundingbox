@@ -8,9 +8,9 @@ The ComfyUI Mask Bounding Box Plugin provides functionalities for selecting a sp
 ## Features
 
 - **Thresholding**: Threshold by mask value
-- **Raw/resized Mask**: Selects the largest bounded mask.
-- **Raw/resized Image**: Applies the selected image to the bounded mask.
-- **Keeps aspect ratio**: Aspect ratio is fixed by your specified output size.
+- **Mask**: Selects the largest bounded mask.
+- **Image**: Applies the selected image to the bounded mask.
+- **Minimum width/height**: centered as much as available around the bounding box.
 
 ## Usage
 
