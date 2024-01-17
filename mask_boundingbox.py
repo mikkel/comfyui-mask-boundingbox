@@ -28,14 +28,20 @@ class MaskBoundingBox:
         mask_above_threshold = mask_bounding_box > threshold
 
         # Compute the bounding box
-        non_zero_positions = torch.nonzero(mask_above_threshold)
+        non_zero_positions = torch.nonzero(mask_above_threshold, as_tuple=False)
         if len(non_zero_positions) == 0:
             return (0, 0, 0, 0, 0, 0, torch.zeros_like(mask_bounding_box), torch.zeros_like(image_mapped))
 
-        min_x = int(torch.min(non_zero_positions[:, 1]))
-        max_x = int(torch.max(non_zero_positions[:, 1]))
-        min_y = int(torch.min(non_zero_positions[:, 0]))
-        max_y = int(torch.max(non_zero_positions[:, 0]))
+        if (len(non_zero_positions[0]) == 3):
+            min_x = int(torch.min(non_zero_positions[:, 2]))
+            max_x = int(torch.max(non_zero_positions[:, 2]))
+            min_y = int(torch.min(non_zero_positions[:, 1]))
+            max_y = int(torch.max(non_zero_positions[:, 1]))
+        else:
+            min_x = int(torch.min(non_zero_positions[:, 1]))
+            max_x = int(torch.max(non_zero_positions[:, 1]))
+            min_y = int(torch.min(non_zero_positions[:, 0]))
+            max_y = int(torch.max(non_zero_positions[:, 0]))
 
         cx = (max_x+min_x)//2
         cy = (max_y+min_y)//2
@@ -62,4 +68,3 @@ class MaskBoundingBox:
 NODE_CLASS_MAPPINGS = {
     "Mask Bounding Box": MaskBoundingBox,
 }
-
