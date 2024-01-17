@@ -41,15 +41,15 @@ class MaskBoundingBox:
         cy = (max_y+min_y)//2
 
         while(max_x - min_x < min_width):
-            if max_x < mask_bounding_box.shape[1]:
+            if max_x < mask_bounding_box.shape[1] or min_x <= 0:
                 max_x+=1
-            if min_x > 0:
+            else:
                 min_x-=1
 
         while(max_y - min_y < min_height):
-            if max_y < mask_bounding_box.shape[0]:
+            if max_y < mask_bounding_box.shape[0] or min_y <= 0:
                 max_y+=1
-            if min_y > 0:
+            else:
                 min_y-=1
 
         # Extract raw bounded mask
