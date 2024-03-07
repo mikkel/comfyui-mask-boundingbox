@@ -36,38 +36,44 @@ class MaskBoundingBox:
         if len(non_zero_positions) == 0:
             return (0, 0, 0, 0, 0, 0, torch.zeros_like(mask_bounding_box), torch.zeros_like(image_mapped))
 
-        if (len(non_zero_positions[0]) == 3):
-            min_x = int(torch.min(non_zero_positions[:, 2]))
-            max_x = int(torch.max(non_zero_positions[:, 2]))
-            min_y = int(torch.min(non_zero_positions[:, 1]))
-            max_y = int(torch.max(non_zero_positions[:, 1]))
-            raw_bb = mask_bounding_box[:,int(min_y):int(max_y), int(min_x):int(max_x)] 
-        else:
-            min_x = int(torch.min(non_zero_positions[:, 1]))
-            max_x = int(torch.max(non_zero_positions[:, 1]))
-            min_y = int(torch.min(non_zero_positions[:, 0]))
-            max_y = int(torch.max(non_zero_positions[:, 0]))
+        len_zeros = len(non_zero_positions[0])
+        min_x = int(torch.min(non_zero_positions[:, len_zeros - 1]))
+        max_x = int(torch.max(non_zero_positions[:, len_zeros - 1]))
+        min_y = int(torch.min(non_zero_positions[:, len_zeros - 2]))
+        max_y = int(torch.max(non_zero_positions[:, len_zeros - 2]))
+        
+        if (len_zeros == 2):
             raw_bb = mask_bounding_box[int(min_y):int(max_y), int(min_x):int(max_x)]
+        elif (len_zeros == 3):
+            raw_bb = mask_bounding_box[:,int(min_y):int(max_y), int(min_x):int(max_x)] 
+        elif (len_zeros == 4):
+            raw_bb = mask_bounding_box[:,:,int(min_y):int(max_y), int(min_x):int(max_x)] 
 
-        cx = (max_x+min_x)//2
-        cy = (max_y+min_y)//2
+        print (raw_bb == mask_bounding_box[...,int(min_y):int(max_y), int(min_x):int(max_x)])
+                    
+        print("here")
+        print(min_x, max_x, min_y, max_y)
+        print(len(non_zero_positions[0]))
+        print(non_zero_positions[:, 2])
+        for i in range(len_zeros):
+            print(str(i), mask_bounding_box.shape[i])
+            #array_to_text_file(non_zero_positions[:, i], "boudning_box_error_" + str(i) + ".txt")
+      
+        pad_x = max(0, (min_width - (max_x - min_x)) / 2)
+        pad_y = max(0, (min_height - (max_y - min_y)) / 2)
+        
+        pad_left = max(pad_left, pad_x)
+        pad_right = max(pad_right, pad_x)
+        pad_top = max(pad_top, pad_y)
+        pad_bottom = max(pad_bottom, pad_y)
 
-        while(max_x - min_x < min_width):
-            if max_x < mask_bounding_box.shape[1] or min_x <= 0:
-                max_x+=1
-            else:
-                min_x-=1
+        width = mask_bounding_box.shape[len_zeros - 1]
+        height = mask_bounding_box.shape[len_zeros - 2]
 
-        while(max_y - min_y < min_height):
-            if max_y < mask_bounding_box.shape[0] or min_y <= 0:
-                max_y+=1
-            else:
-                min_y-=1
-
-        min_x -= pad_left
-        max_x += pad_right
-        min_y -= pad_top
-        max_y += pad_bottom
+        min_x = max(min_x - pad_left, 0)
+        max_x = min(max_x + pad_right, width)
+        min_y = max(min_y - pad_top, 0)
+        max_y = min(max_y + pad_bottom, height)
         
         raw_img = image_mapped[:,int(min_y):int(max_y),int(min_x):int(max_x),:]
 
