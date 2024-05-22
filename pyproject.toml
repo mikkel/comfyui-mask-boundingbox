@@ -1,0 +1,14 @@
+[project]
+name = "comfyui-mask-boundingbox"
+description = "The ComfyUI Mask Bounding Box Plugin provides functionalities for selecting a specific size mask from an image. Can be combined with ClipSEG to replace any aspect of an SDXL image with an SD1.5 output."
+version = "1.0.0"
+license = "LICENSE"
+
+[project.urls]
+Repository = "https://github.com/mikkel/comfyui-mask-boundingbox"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "comfyui-mask-boundingbox"
+Icon = ""
