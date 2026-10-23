@@ -24,6 +24,10 @@ class MaskBoundingBox:
     CATEGORY = "image/processing"
     
     def compute_bounding_box(self, mask_bounding_box, min_width, min_height, image_mapped, threshold):
+        # Bound requested expansion to the image; larger minima cannot be reached.
+        min_width = max(0, min(int(min_width), mask_bounding_box.shape[1]))
+        min_height = max(0, min(int(min_height), mask_bounding_box.shape[0]))
+
         # Get the mask where pixel values are above the threshold
         mask_above_threshold = mask_bounding_box > threshold
 
