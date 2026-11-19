@@ -18,6 +18,10 @@ The ComfyUI Mask Bounding Box Plugin provides functionalities for selecting a sp
 * Attach a mask and image
 * Output the resulting bounding box and resized mask/images.
 
+ComfyUI masks keep their batch dimension. When a batch has multiple masks,
+the node returns one crop that includes the selected pixels from every mask.
+The right and bottom coordinates are exclusive for batched inputs.
+
 Great for inpainting or selecting certain objects.
 
 ## Feedback & Contributions
