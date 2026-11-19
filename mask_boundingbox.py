@@ -24,12 +24,19 @@ class MaskBoundingBox:
     CATEGORY = "image/processing"
     
     def compute_bounding_box(self, mask_bounding_box, min_width, min_height, image_mapped, threshold):
-        # Bound requested expansion to the image; larger minima cannot be reached.
-        min_width = max(0, min(int(min_width), mask_bounding_box.shape[1]))
-        min_height = max(0, min(int(min_height), mask_bounding_box.shape[0]))
-
-        # Get the mask where pixel values are above the threshold
         mask_above_threshold = mask_bounding_box > threshold
+        # ComfyUI supplies [batch, height, width]. The node returns one box, so
+        # include selected pixels from every mask in the batch.
+        end_offset = 0
+        if mask_above_threshold.ndim == 3:
+            mask_above_threshold = mask_above_threshold.any(dim=0)
+            # Include the last selected pixel in the slice. Keep the original
+            # endpoint convention for callers passing a two-dimensional mask.
+            end_offset = 1
+
+        height, width = mask_above_threshold.shape
+        min_width = max(0, min(int(min_width), width))
+        min_height = max(0, min(int(min_height), height))
 
         # Compute the bounding box
         non_zero_positions = torch.nonzero(mask_above_threshold)
@@ -37,27 +44,24 @@ class MaskBoundingBox:
             return (0, 0, 0, 0, 0, 0, torch.zeros_like(mask_bounding_box), torch.zeros_like(image_mapped))
 
         min_x = int(torch.min(non_zero_positions[:, 1]))
-        max_x = int(torch.max(non_zero_positions[:, 1]))
+        max_x = int(torch.max(non_zero_positions[:, 1])) + end_offset
         min_y = int(torch.min(non_zero_positions[:, 0]))
-        max_y = int(torch.max(non_zero_positions[:, 0]))
-
-        cx = (max_x+min_x)//2
-        cy = (max_y+min_y)//2
+        max_y = int(torch.max(non_zero_positions[:, 0])) + end_offset
 
         while(max_x - min_x < min_width):
-            if max_x < mask_bounding_box.shape[1]:
+            if max_x < width:
                 max_x+=1
             if min_x > 0:
                 min_x-=1
 
         while(max_y - min_y < min_height):
-            if max_y < mask_bounding_box.shape[0]:
+            if max_y < height:
                 max_y+=1
             if min_y > 0:
                 min_y-=1
 
         # Extract raw bounded mask
-        raw_bb = mask_bounding_box[int(min_y):int(max_y),int(min_x):int(max_x)]
+        raw_bb = mask_bounding_box[..., min_y:max_y, min_x:max_x]
         raw_img = image_mapped[:,int(min_y):int(max_y),int(min_x):int(max_x),:]
 
         return (int(min_x), int(max_x), int(min_y), int(max_y), int(max_x-min_x), int(max_y-min_y), raw_bb, raw_img)
